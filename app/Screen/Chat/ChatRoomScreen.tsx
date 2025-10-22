@@ -45,13 +45,10 @@ export default function ChatRoomScreenWrapper() {
   const selectedUsername = route.params?.selectedUsername;
   const selectedUserProfile = route.params?.selectedUserProfile || '';
 
-  // เงื่อนไขที่สำคัญ: รอจนกว่าข้อมูลผู้ใช้ที่ล็อคอิน และ username ของคู่สนทนาจะพร้อม
   if (!selectedUsername || !user?.username) {
-    // หากข้อมูลยังไม่พร้อม ให้แสดงผลหน้าจอโหลดต่อไป
     return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />;
   }
 
-  // เมื่อข้อมูลทุกอย่างพร้อมแล้ว จึง Render หน้าจอแชท
   return (
     <ChatProvider currentUsername={user.username} selectedUsername={selectedUsername}>
       <ChatRoomScreen selectedUserProfile={selectedUserProfile} selectedUsername={selectedUsername} />

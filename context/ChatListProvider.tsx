@@ -27,14 +27,13 @@ export const ChatListProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   useEffect(() => {
     if (!user?.username) return;
-    // ✅ Use chat server from shared API config
     const socket = io(API.CHAT_BASE_URL);
     socket.emit('join', user.username);
 
     socket.on('chat-message', (msg) => {
       if (msg.receiver === user.username) {
         setHasNewMessage(true);
-        refreshChatList(); // เพื่อดึงข้อความล่าสุดเข้ามา
+        refreshChatList();
       }
     });
 
@@ -47,7 +46,6 @@ export const ChatListProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (!user?.username) return;
 
     try {
-      // ✅ Use API.CHAT_BASE_URL instead of hard-coded host
       const res = await fetch(`${API.CHAT_BASE_URL}/api/chat-users?username=${encodeURIComponent(user.username)}`);
       const chatListData = await res.json();
 

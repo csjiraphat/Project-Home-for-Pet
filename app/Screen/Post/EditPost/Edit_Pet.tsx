@@ -1,4 +1,4 @@
-// ✅ Edit_Pet.tsx — update via PUT (JSON), แล้วรี-แมตช์อัตโนมัติ (save=1&overwrite=1)
+// ✅ Edit_Pet.tsx
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, Alert, ScrollView, StyleSheet, SafeAreaView
@@ -12,7 +12,6 @@ import API from '../../../../android/app/src/config';
 
 type Option = { id: number; label: string };
 
-// -------- Master API helpers --------
 const MASTER_READ = (API as any).MASTER_READ || `${(API as any).BASE_URL || ''}/post/master_read_api.php`;
 const buildQuery = (params: Record<string, any> = {}) =>
   Object.entries(params)
@@ -31,7 +30,6 @@ const fetchMaster = async (entity: string, params: any = {}) => {
 const toOptions = (rows: any[], idKey: string, nameKey = 'name_th'): Option[] =>
   rows.map((r) => ({ id: r[idKey], label: r[nameKey] || '' }));
 
-// --- UI helpers (theme like screenshot) ---
 const ThemedDivider = () => (
   <View style={{ height: 1, backgroundColor: '#c7d7ff', marginVertical: 12, marginHorizontal: 10, borderRadius: 1 }} />
 );
@@ -55,7 +53,6 @@ const ThemedPicker = ({ selectedValue, onValueChange, options, placeholder }: { 
   </View>
 );
 
-// --- Dropdown with multi-select & max ---
 const MultiSelectDropdown = ({
   options, selected, onChange, placeholder, max = 3
 }: { options: Option[]; selected: string[]; onChange: (next: string[]) => void; placeholder: string; max?: number }) => {
@@ -94,7 +91,6 @@ const MultiSelectDropdown = ({
 const COLORS_DOG = ['ขาว', 'ดำ', 'น้ำตาล', 'ทอง', 'เทา', 'ดำ-น้ำตาล', 'ขาว-ดำ', 'ครีม', 'ผสม'];
 const COLORS_CAT = ['ขาว', 'ดำ', 'ส้ม', 'เทา', 'ลายเสือ', 'ขาว-ดำ', 'ดำ-ส้ม', 'ครีม', 'ผสม'];
 
-// --- Re-match endpoints / route
 const MATCH_POSTS = (API as any).MATCH_POSTS || `${(API as any).BASE_URL || ''}/post/match_posts.php`;
 const MATCH_RESULT_ROUTE = (API as any).ROUTE_MATCH_RESULT || 'MatchResult';
 
@@ -160,7 +156,6 @@ const Edit_Pet = () => {
     });
   };
 
-  // ✅ Re-match (เขียนทับประวัติเดิม)
   const rematchAfterUpdateFP = async (id: number) => {
     try {
       const url = `${MATCH_POSTS}?mode=from_fp&id=${id}&save=1&overwrite=1`;
@@ -188,7 +183,7 @@ const Edit_Pet = () => {
 
   const handleSubmit = async () => {
     const username = await AsyncStorage.getItem('username') || 'guest';
-    // คำนวณช่วงอายุใหม่
+
     let __minMonths: number | null = null, __maxMonths: number | null = null;
     if (formData.age_mode === 'exact') {
       const m = yMtoMonths(formData.exactYear, formData.exactMonth);
@@ -224,9 +219,9 @@ const Edit_Pet = () => {
       const text = await res.text();
       let json: any = null; try { json = JSON.parse(text); } catch { }
       if (json?.status === 'success') {
-        // 🔁 รี-แมตช์และเขียนทับประวัติเดิม
+
         await rematchAfterUpdateFP(post.id);
-        // navigation.goBack();
+
       }
       else Alert.alert('ผิดพลาด', (json && json.message) || text || 'บันทึกไม่ได้');
     } catch (e: any) { Alert.alert('ผิดพลาด', e.message || 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'); }

@@ -8,7 +8,7 @@ import {
   Easing,
   Platform,
   StatusBar,
-  Image,           // ✅ เพิ่ม import Image
+  Image,         
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 

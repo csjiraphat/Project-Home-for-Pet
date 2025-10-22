@@ -22,26 +22,26 @@ type RootStackParamList = {
 const { width } = Dimensions.get('window');
 const RADIUS = 16;
 
-// ---------- Image Assets ----------
-const homeImg  = require('../../assets/home.png');
+
+const homeImg = require('../../assets/home.png');
 const adoptImg = require('../../assets/adopt.png');
-const dogImg   = require('../../assets/dog.png');
-const catImg   = require('../../assets/cat.png');
-const bookImg  = require('../../assets/book.png'); // ✅ เพิ่มรูปสำหรับปุ่มคำแนะนำ
+const dogImg = require('../../assets/dog.png');
+const catImg = require('../../assets/cat.png');
+const bookImg = require('../../assets/book.png');
 
 export default function HomeScreen() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
-  const goCareTips    = () => navigation.navigate('CareTips');
+  const goCareTips = () => navigation.navigate('CareTips');
   const goAllFindHome = () => navigation.navigate('PostList', { filterType: 'fh' });
-  const goAllFindPet  = () => navigation.navigate('PostList', { filterType: 'fp' });
-  const goAllDogs     = () => navigation.navigate('PostList', { filterType: ['dog', 'หมา', 'สุนัข'] });
-  const goAllCats     = () => navigation.navigate('PostList', { filterType: ['cat', 'แมว'] });
+  const goAllFindPet = () => navigation.navigate('PostList', { filterType: 'fp' });
+  const goAllDogs = () => navigation.navigate('PostList', { filterType: ['dog', 'หมา', 'สุนัข'] });
+  const goAllCats = () => navigation.navigate('PostList', { filterType: ['cat', 'แมว'] });
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.inner}>
-        {/* ปุ่มยาวด้านบน (เพิ่มรูป book.png เป็นลายน้ำ) */}
+
         <MenuLong
           title="ความรู้ในการดูแลสัตว์เลี้ยง"
           subtitle="อาหาร • วัคซีน • สุขภาพ • สิ่งแวดล้อม"
@@ -50,7 +50,7 @@ export default function HomeScreen() {
           bgImage={bookImg}
         />
 
-        {/* แถว 2 */}
+
         <View style={styles.row2}>
           <MenuCard
             title="โพสต์หาบ้าน"
@@ -66,7 +66,7 @@ export default function HomeScreen() {
           />
         </View>
 
-        {/* แถว 3 */}
+
         <View style={styles.row2}>
           <MenuCard
             title="รายการสุนัขทั้งหมด"
@@ -88,14 +88,13 @@ export default function HomeScreen() {
   );
 }
 
-/* ---------- Components ---------- */
 
 type MenuLongProps = {
   title: string;
   subtitle?: string;
   onPress: () => void;
   bgColor?: string;
-  bgImage?: any; // ✅ เพิ่มรองรับรูป
+  bgImage?: any;
 };
 
 function MenuLong({ title, subtitle, onPress, bgColor = '#E5E7EB', bgImage }: MenuLongProps) {
@@ -146,13 +145,13 @@ function MenuCard({ title, onPress, bgColor = '#E5E7EB', bgImage }: MenuCardProp
   );
 }
 
-/* ---------- Styles ---------- */
+
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   inner: { flex: 1, paddingHorizontal: 12, paddingVertical: 12, gap: 12 },
 
-  // ปุ่มยาว
+
   longWrap: { width: '100%' },
   longCard: {
     width: '100%',
@@ -166,7 +165,7 @@ const styles = StyleSheet.create({
   longTitle: { color: '#0f172a', fontWeight: '800', fontSize: 20 },
   longSub: { marginTop: 6, color: '#0f172a', fontWeight: '600' },
 
-  // รูปตกแต่งในปุ่มยาว
+
   longBgImage: {
     position: 'absolute',
     right: 12,
@@ -176,7 +175,7 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
 
-  // แถวละ 2 ปุ่ม
+
   row2: { flexDirection: 'row', gap: 12 },
   cardWrap: { flex: 1 },
 

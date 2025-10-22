@@ -50,8 +50,8 @@ type RootStackParamList = { PostDetail: { post: Post } };
 const formatAnimalType = (type?: string) => {
   if (!type) return 'ไม่ระบุประเภท';
   const t = (type || '').trim().toLowerCase();
-  if (['dog','หมา','สุนัข'].includes(t)) return 'สุนัข';
-  if (['cat','แมว'].includes(t)) return 'แมว';
+  if (['dog', 'หมา', 'สุนัข'].includes(t)) return 'สุนัข';
+  if (['cat', 'แมว'].includes(t)) return 'แมว';
   return type;
 };
 const getAgeDisplay = (p: Post) => p.age || (p.min_age || '-') + ' - ' + (p.max_age || '-');
@@ -71,7 +71,6 @@ const postTypeEmoji = (t?: string) => (t || '').toLowerCase() === 'fh' ? '🏠' 
 const getAuthorName = (p: Post) => p.user || p.ownerName || p.userName || p.author || p.createdBy || 'ไม่ระบุผู้โพสต์';
 const getCommentCountFromPost = (p: Post) => p.commentsCount ?? p.comment_count ?? p.com_count ?? p.totalComments ?? 0;
 
-// ---- comment count via API.COMMENTS_LIST (throttled per visible item) ----
 const COUNT_REPLIES_TOO = true;
 async function fetchCommentCount(postId: string | number, postType: string, signal?: AbortSignal) {
   if (!API.COMMENTS_LIST) return null;
@@ -91,14 +90,14 @@ async function fetchCommentCount(postId: string | number, postType: string, sign
     if (Array.isArray(data)) return COUNT_REPLIES_TOO ? data.length : data.filter((x: any) => !x?.parent_id).length;
     const n = Number(data?.count ?? data?.total);
     if (!Number.isNaN(n)) return n;
-  } catch {}
+  } catch { }
   try {
     const res = await fetch(`${API.COMMENTS_LIST}?${body.toString()}`, { signal });
     const data = await res.json();
     if (Array.isArray(data)) return COUNT_REPLIES_TOO ? data.length : data.filter((x: any) => !x?.parent_id).length;
     const n = Number(data?.count ?? data?.total);
     if (!Number.isNaN(n)) return n;
-  } catch {}
+  } catch { }
   return null;
 }
 
@@ -108,7 +107,6 @@ const getStableId = (p: Post) =>
 const buildListId = (p: Partial<Post>) =>
   `${String((p.postType || 'x').toLowerCase())}${String(getStableId(p as Post))}`;
 
-/** ---------- Smart Search Utilities ---------- */
 const normalize = (s?: string) => (s || '').toString().trim().toLowerCase();
 
 const thToSpecies = (raw: string) => {
@@ -132,27 +130,25 @@ const thToSteriliz = (raw: string) => {
   return null;
 };
 
-const COLOR_WORDS = ['ดำ','ขาว','เทา','น้ำตาล','ส้ม','ครีม','ทอง','ดํา','ดํา-ขาว','ขาวดำ','ดำ-ขาว','ลายเสือ','ขาวส้ม','ส้มขาว','ดำเทา','ดําเทา'];
+const COLOR_WORDS = ['ดำ', 'ขาว', 'เทา', 'น้ำตาล', 'ส้ม', 'ครีม', 'ทอง', 'ดํา', 'ดํา-ขาว', 'ขาวดำ', 'ดำ-ขาว', 'ลายเสือ', 'ขาวส้ม', 'ส้มขาว', 'ดำเทา', 'ดําเทา'];
 const extractColors = (s: string) => {
   const hits: string[] = [];
   for (const c of COLOR_WORDS) if (s.includes(c)) hits.push(c);
   return hits;
 };
 
-// --- Breed dictionary (ไทย/อังกฤษ/สะกดใกล้เคียง) ---
-// *สามารถเติมเพิ่มได้เรื่อยๆ ตามฐานข้อมูลจริง*
 const KNOWN_BREEDS = [
-  // หมา (ตัวอย่าง)
-  'ชิสุ','ชิห์สุ','shih tzu',
-  'พุดเดิ้ล','poodle',
-  'พิทบูล','pitbull','pit bull',
-  'ไทยหลังอาน','thai ridgeback',
-  'โกลเด้น','golden',
-  'ลาบราดอร์','labrador','lab',
-  // แมว (ตัวอย่าง)
-  'เปอร์เซีย','persian',
-  'วิเชียรมาศ','siamese',
-  'สก็อตติชโฟลด์','scottish fold',
+
+  'ชิสุ', 'ชิห์สุ', 'shih tzu',
+  'พุดเดิ้ล', 'poodle',
+  'พิทบูล', 'pitbull', 'pit bull',
+  'ไทยหลังอาน', 'thai ridgeback',
+  'โกลเด้น', 'golden',
+  'ลาบราดอร์', 'labrador', 'lab',
+
+  'เปอร์เซีย', 'persian',
+  'วิเชียรมาศ', 'siamese',
+  'สก็อตติชโฟลด์', 'scottish fold',
 ];
 const extractBreeds = (s: string) => {
   const lower = s.toLowerCase();
@@ -169,7 +165,7 @@ const fieldHasBreed = (p: { breed?: string; title?: string }, want: string[]) =>
 };
 
 const parseAgeStringToMonths = (s?: string) => {
-  // รับได้ทั้ง "5 เดือน", "1 ปี 2 เดือน", "0 ปี 5 เดือน", "4เดือน", "2 ปี"
+
   const str = (s || '').toString().trim().toLowerCase();
   const mY = str.match(/(\d+)\s*ปี/);
   const mM = str.match(/(\d+)\s*เดือน/);
@@ -190,10 +186,10 @@ type ParsedQuery = {
   species?: 'dog' | 'cat';
   sex?: 'male' | 'female';
   steriliz?: 'yes' | 'no';
-  ageMonths?: number; // อายุเป้าหมายเป็นเดือน
+  ageMonths?: number;
   colors: string[];
-  breeds: string[];   // ✅ สายพันธุ์
-  terms: string[];    // คำทั่วไปไว้เช็คใน title
+  breeds: string[];
+  terms: string[];
 };
 
 const parseQuery = (q: string): ParsedQuery => {
@@ -205,7 +201,6 @@ const parseQuery = (q: string): ParsedQuery => {
   const colors = extractColors(s);
   const breeds = extractBreeds(s);
 
-  // terms สำหรับหาใน title; ตัดคำซ้ำกับ breed ออกเพื่อลดการให้คะแนนซ้ำซ้อน
   const roughAll = s.replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(Boolean);
   const terms = roughAll.filter(t => !breeds.some(b => b.includes(t) || t.includes(b)));
 
@@ -219,8 +214,8 @@ const fieldHasColor = (field: string | undefined, want: string[]) => {
 
 const normalizeSpeciesField = (t?: string) => {
   const s = (t || '').toString().toLowerCase();
-  if (['dog','หมา','สุนัข'].includes(s)) return 'dog';
-  if (['cat','แมว'].includes(s)) return 'cat';
+  if (['dog', 'หมา', 'สุนัข'].includes(s)) return 'dog';
+  if (['cat', 'แมว'].includes(s)) return 'cat';
   return s || '';
 };
 
@@ -244,31 +239,25 @@ const scorePostByQuery = (p: Post, pq: ParsedQuery): number => {
   }
   let score = 0;
 
-  // Title relevance (สูงสุด)
   const title = (p.title || '').toString().toLowerCase();
   for (const t of pq.terms) {
     if (!t) continue;
     if (title.includes(t)) score += 6;
   }
 
-  // Species
   const postSpecies = normalizeSpeciesField(p.type);
   if (pq.species && postSpecies === pq.species) score += 4;
 
-  // ✅ Breed (สายพันธุ์): เช็คทั้ง field breed และ title
   if (pq.breeds.length && fieldHasBreed(p, pq.breeds)) {
     score += 3;
   }
 
-  // Sex
   const postSex = normalizeSexField(p.sex);
   if (pq.sex && postSex === pq.sex) score += 3;
 
-  // Steriliz
   const postSteriliz = normalizeSterilizField(p.steriliz);
   if (pq.steriliz && postSteriliz === pq.steriliz) score += 2;
 
-  // Colors
   if (pq.colors.length) {
     const colorHit =
       fieldHasColor(p.color, pq.colors) ||
@@ -277,7 +266,6 @@ const scorePostByQuery = (p: Post, pq: ParsedQuery): number => {
     if (colorHit) score += 2;
   }
 
-  // Age proximity
   if (pq.ageMonths != null) {
     const { exact, min, max } = getPostAgeTargetMonths(p);
     if (exact != null) {
@@ -300,7 +288,6 @@ const scorePostByQuery = (p: Post, pq: ParsedQuery): number => {
 
   return score;
 };
-/** ---------- End Smart Search Utilities ---------- */
 
 export default function PostListScreen() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -310,16 +297,14 @@ export default function PostListScreen() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  // ✅ ค่าเริ่มต้นของ chip มาจาก route แต่เราจะ "โหลดทั้งสองชนิดเสมอ"
   const [postTypeFilter, setPostTypeFilter] =
-    useState<'all'|'fh'|'fp'>(() => (filterType==='fh'||filterType==='fp')?filterType:'all');
+    useState<'all' | 'fh' | 'fp'>(() => (filterType === 'fh' || filterType === 'fp') ? filterType : 'all');
 
   const [counts, setCounts] = useState<Record<string, number>>({});
   const loadingIdsRef = useRef<Set<string>>(new Set());
   const listAbortRef = useRef<AbortController | null>(null);
   const countsAbortRef = useRef<AbortController | null>(null);
 
-  // ✅ ช่องค้นหา + debounce
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   useEffect(() => {
@@ -346,7 +331,6 @@ export default function PostListScreen() {
     };
   }, []);
 
-  // ✅ โหลด "ทั้งสอง endpoint เสมอ" (โครงสร้างเดิม)
   const fetchPosts = useCallback(async () => {
     listAbortRef.current?.abort();
     const ctrl = new AbortController();
@@ -380,7 +364,6 @@ export default function PostListScreen() {
         merged.push(p);
       }
 
-      // หาก Home ส่ง filterType เป็นอาเรย์ประเภทสัตว์ ก็กรองตามนั้น (ตรรกะเดิม)
       let result = merged;
       if (Array.isArray(filterType)) {
         const keys = filterType.map(x => String(x).toLowerCase());
@@ -405,13 +388,11 @@ export default function PostListScreen() {
     fetchPosts();
   }, [fetchPosts]);
 
-  // ✅ แสดงตามชิป (ข้อมูลมีครบทั้ง fh/fp)
   const displayPosts = useMemo(() => {
-    if (postTypeFilter==='all') return posts;
-    return posts.filter(p => (p.postType||'').toLowerCase() === postTypeFilter);
+    if (postTypeFilter === 'all') return posts;
+    return posts.filter(p => (p.postType || '').toLowerCase() === postTypeFilter);
   }, [posts, postTypeFilter]);
 
-  // ✅ ผลลัพธ์อัจฉริยะตามคำค้น + จัดอันดับ
   const smartResults = useMemo(() => {
     const q = debouncedQuery.trim();
     if (!q) return displayPosts;
@@ -424,7 +405,6 @@ export default function PostListScreen() {
       .sort((a, b) => b.s - a.s)
       .map(x => x.p);
 
-    // fallback: ถ้าไม่มีคะแนนเลย ให้ค้นหาแบบกว้าง title/breed
     if (scored.length === 0) {
       const lower = q.toLowerCase();
       return displayPosts.filter(p =>
@@ -442,9 +422,9 @@ export default function PostListScreen() {
     loadingIdsRef.current.add(listKey);
     countsAbortRef.current ??= new AbortController();
     try {
-      const c = await fetchCommentCount(String(getStableId(p)), String((p.postType||'').toLowerCase()), countsAbortRef.current.signal);
+      const c = await fetchCommentCount(String(getStableId(p)), String((p.postType || '').toLowerCase()), countsAbortRef.current.signal);
       if (c != null) setCounts(prev => ({ ...prev, [listKey]: c }));
-    } catch {}
+    } catch { }
     finally {
       loadingIdsRef.current.delete(listKey);
     }
@@ -512,23 +492,23 @@ export default function PostListScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* ฟิลเตอร์ชิป */}
+
       <View style={styles.filterRow}>
         <Text style={styles.filterLabel}>กรองตามประเภท:</Text>
         <View style={styles.filterChips}>
-          <TouchableOpacity onPress={() => setPostTypeFilter('all')} style={[styles.chip, postTypeFilter==='all' && styles.chipActive]}>
-            <Text style={[styles.chipText, postTypeFilter==='all' && styles.chipTextActive]}>ทั้งหมด</Text>
+          <TouchableOpacity onPress={() => setPostTypeFilter('all')} style={[styles.chip, postTypeFilter === 'all' && styles.chipActive]}>
+            <Text style={[styles.chipText, postTypeFilter === 'all' && styles.chipTextActive]}>ทั้งหมด</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setPostTypeFilter('fh')} style={[styles.chip, postTypeFilter==='fh' && styles.chipActive]}>
-            <Text style={[styles.chipText, postTypeFilter==='fh' && styles.chipTextActive]}>🏠 หาบ้าน</Text>
+          <TouchableOpacity onPress={() => setPostTypeFilter('fh')} style={[styles.chip, postTypeFilter === 'fh' && styles.chipActive]}>
+            <Text style={[styles.chipText, postTypeFilter === 'fh' && styles.chipTextActive]}>🏠 หาบ้าน</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setPostTypeFilter('fp')} style={[styles.chip, postTypeFilter==='fp' && styles.chipActive]}>
-            <Text style={[styles.chipText, postTypeFilter==='fp' && styles.chipTextActive]}>🤝 รับเลี้ยง</Text>
+          <TouchableOpacity onPress={() => setPostTypeFilter('fp')} style={[styles.chip, postTypeFilter === 'fp' && styles.chipActive]}>
+            <Text style={[styles.chipText, postTypeFilter === 'fp' && styles.chipTextActive]}>🤝 รับเลี้ยง</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* ช่องค้นหา */}
+
       <View style={styles.searchRow}>
         <TextInput
           value={query}
@@ -586,7 +566,7 @@ const styles = StyleSheet.create({
   chipText: { color: '#111827', fontWeight: '600' },
   chipTextActive: { color: '#fff' },
 
-  // Search
+
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, marginBottom: 8 },
   searchInput: {
     flex: 1,

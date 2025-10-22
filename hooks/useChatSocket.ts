@@ -1,4 +1,4 @@
-// ✅ hooks/useChatSocket.ts (refactor: use API.CHAT_BASE_URL, platform-safe, proper types)
+// ✅ hooks/useChatSocket.ts
 import { useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import { io, Socket } from 'socket.io-client';
@@ -13,7 +13,6 @@ export type Message = {
   timestamp: string;
 };
 
-// Normalize CHAT_BASE from config (supports emulator and trims trailing slash)
 const normalizeChatBase = (raw?: string) => {
   let base = (raw || '').trim();
   if (!base) return '';
@@ -33,7 +32,6 @@ export default function useChatSocket(currentUsername: string, selectedUsername:
   const [loading, setLoading] = useState(true);
   const socketRef = useRef<Socket | null>(null);
 
-  // Helper: only keep conversation between current and selected user
   const isInThisRoom = (m: Message) => {
     const a = m.sender, b = m.receiver;
     return (
@@ -42,7 +40,6 @@ export default function useChatSocket(currentUsername: string, selectedUsername:
     );
   };
 
-  // Initial fetch of history
   useEffect(() => {
     let cancelled = false;
 
@@ -71,14 +68,12 @@ export default function useChatSocket(currentUsername: string, selectedUsername:
     };
   }, [currentUsername, selectedUsername]);
 
-  // Socket connection
   useEffect(() => {
     if (!currentUsername || !selectedUsername) return;
 
     const socket = io(CHAT_BASE, { transports: ['websocket'] });
     socketRef.current = socket;
 
-    // join own room for direct messages
     socket.emit('join', currentUsername);
 
     socket.on('connect_error', (err) => {
@@ -110,12 +105,10 @@ export default function useChatSocket(currentUsername: string, selectedUsername:
     socketRef.current.emit('chat-message', payload);
   };
 
-  // Build absolute URL for media if given a relative path
   const absolutize = (maybeRelative: string) => {
     if (!maybeRelative) return maybeRelative;
     if (/^https?:\/\//i.test(maybeRelative)) return maybeRelative;
     if (maybeRelative.startsWith('/')) return `${CHAT_BASE}${maybeRelative}`;
-    // try to extract /uploads from accidental absolute host
     const m = maybeRelative.match(/^https?:\/\/[^/]+(\/.*)$/i);
     if (m) return `${CHAT_BASE}${m[1]}`;
     return maybeRelative;

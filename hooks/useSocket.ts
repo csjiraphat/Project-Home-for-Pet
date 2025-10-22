@@ -1,7 +1,7 @@
 // hooks/useSocket.ts
 import { useEffect, useRef } from 'react';
 import io from 'socket.io-client';
-const SOCKET_URL = 'http://<IP_ADDRESS>:3000'; // ใส่ IP จริงของ backend
+const SOCKET_URL = 'http://<IP_ADDRESS>:3000';
 
 export const useSocket = (username: string) => {
   const socketRef = useRef<Socket | null>(null);

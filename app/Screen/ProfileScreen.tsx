@@ -35,7 +35,6 @@ import * as ImagePicker from 'expo-image-picker';
 dayjs.extend(relativeTime);
 dayjs.locale('th');
 
-/** ---------------- Types ---------------- **/
 type UserData = {
   id: string;
   username: string;
@@ -67,13 +66,13 @@ type Post = {
   image?: string;
   post_date?: string;
   postType?: 'fh' | 'fp';
-  status?: string; // <<< [เพิ่ม] เพิ่ม status เข้าไปใน Type
+  status?: string;
   [k: string]: any;
 };
 
 const SIDE_WIDTH = 260;
 
-/** ---------------- Component ---------------- **/
+
 const ProfileScreen = () => {
   const { user, setUser } = useUser();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -105,7 +104,7 @@ const ProfileScreen = () => {
     if (!user?.username) return;
     setLoading(true);
     try {
-      // <<< [แก้ไข] ส่ง username ไปกับ URL เพื่อดึงโพสต์ทั้งหมด (ทั้ง active และ hidden)
+
       const [userRes, homeRes, petRes] = await Promise.all([
         fetch(API.USERS),
         fetch(`${API.POST_FIND_HOME}?username=${encodeURIComponent(user.username)}`),
@@ -120,8 +119,8 @@ const ProfileScreen = () => {
       const petPosts: Post[] = (Array.isArray(petRaw) ? petRaw : []).map((p: any) => ({ ...p, postType: 'fp' }));
 
       const thisUser = usersJson.find((u: UserData) => u.username === user.username);
-      
-      // <<< [แก้ไข] ไม่ต้อง filter ซ้ำ และเรียงโพสต์ตามวันที่ล่าสุด
+
+
       const allPosts = [...homePosts, ...petPosts];
       allPosts.sort((a, b) => dayjs(b.post_date).valueOf() - dayjs(a.post_date).valueOf());
 
@@ -178,7 +177,7 @@ const ProfileScreen = () => {
     navigation.navigate('EditPost', { post });
   };
 
-  // <<< [เพิ่ม] ฟังก์ชันสำหรับเปิด/ปิดโพสต์
+
   const handleTogglePostStatus = (post: Post) => {
     const isActive = post.status === 'active';
     const newStatus = isActive ? 'hidden' : 'active';
@@ -195,7 +194,7 @@ const ProfileScreen = () => {
           style: isActive ? 'destructive' : 'default',
           onPress: async () => {
             try {
-              // สมมติว่าสร้าง API endpoint ใหม่ชื่อ POST_UPDATE_STATUS
+
               const endpoint = API.POST_UPDATE_STATUS || `${API.BASE_URL}/post/updatePostStatus.php`;
               const res = await fetch(endpoint, {
                 method: 'POST',
@@ -211,7 +210,7 @@ const ProfileScreen = () => {
 
               if (data.status === 'success') {
                 Alert.alert('สำเร็จ', `ได้${successText}โพสต์แล้ว`);
-                fetchData(); // รีเฟรชรายการโพสต์
+                fetchData();
               } else {
                 Alert.alert('ผิดพลาด', data.message || `ไม่สามารถ${actionText}โพสต์ได้`);
               }
@@ -224,7 +223,7 @@ const ProfileScreen = () => {
       ]
     );
   };
-  
+
   const handleDelete = (post: Post) => {
     Alert.alert('ยืนยันการลบ', 'คุณต้องการลบโพสต์นี้หรือไม่?', [
       { text: 'ยกเลิก', style: 'cancel' },
@@ -245,7 +244,7 @@ const ProfileScreen = () => {
               headers: { Accept: 'application/json' },
             });
             let data: any = null;
-            try { data = await res.json(); } catch {}
+            try { data = await res.json(); } catch { }
 
             if (res.ok && data && data.status === 'success') {
               setPosts((prev) => prev.filter((p) => String(p.id) !== idValue));
@@ -259,7 +258,7 @@ const ProfileScreen = () => {
               body: `action=delete&id=${encodeURIComponent(idValue)}`,
             });
             let data2: any = null;
-            try { data2 = await res2.json(); } catch {}
+            try { data2 = await res2.json(); } catch { }
             if (res2.ok && data2 && (data2.status === 'success' || data2.success === true)) {
               setPosts((prev) => prev.filter((p) => String(p.id) !== idValue));
               Alert.alert('ลบแล้ว', 'โพสต์ถูกลบเรียบร้อยแล้ว');
@@ -311,7 +310,7 @@ const ProfileScreen = () => {
           posts.map((post) => (
             <TouchableOpacity
               key={`${post.postType}-${post.id}`}
-              style={[styles.postItem, post.status !== 'active' && styles.postItemHidden]} // <<< [เพิ่ม] ทำให้โพสต์ที่ปิดแล้วสีจางลง
+              style={[styles.postItem, post.status !== 'active' && styles.postItemHidden]}
               onPress={() => navigation.navigate('PostDetail', { post })}
             >
               <Text style={styles.postTitle}>{post.title}</Text>
@@ -319,8 +318,8 @@ const ProfileScreen = () => {
                 {post.type === 'dog' || post.type === 'หมา' ? '🐶 สุนัข' : '🐱 แมว'} | {post.breed || 'ไม่ระบุสายพันธุ์'}
               </Text>
               {post.post_date && <Text style={styles.timeText}>{dayjs(post.post_date).fromNow()}</Text>}
-              
-              {/* <<< [แก้ไข] เพิ่มปุ่ม "ปิดโพสต์" และปรับ Layout */}
+
+
               <View style={styles.buttonRow}>
                 <TouchableOpacity style={styles.editBtn} onPress={() => handleEdit(post)}>
                   <Text style={styles.btnText}>แก้ไข</Text>
@@ -350,7 +349,6 @@ const ProfileScreen = () => {
 
 export default ProfileScreen;
 
-/** ---------------- Styles ---------------- **/
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   scroll: { padding: 16, paddingBottom: 40 },
@@ -368,28 +366,27 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 10,
   },
-  postItemHidden: { // <<< [เพิ่ม] สไตล์สำหรับโพสต์ที่ถูกปิด
+  postItemHidden: {
     backgroundColor: '#F3F4F6',
     borderColor: '#E5E7EB',
   },
   postTitle: { fontSize: 16, fontWeight: '700', color: '#111' },
   postInfo: { marginTop: 4, color: '#334' },
   timeText: { marginTop: 4, color: '#7a8', fontSize: 12 },
-  buttonRow: { flexDirection: 'row', gap: 8, marginTop: 12 }, // <<< [แก้ไข] ปรับ gap และ margin
+  buttonRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
   editBtn: { flex: 1, backgroundColor: '#4f46e5', paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
-  closeBtn: { // <<< [เพิ่ม] สไตล์ปุ่มปิด
-    flex: 1,
-    backgroundColor: '#10B981', // สีเขียว
+  closeBtn: {
+    backgroundColor: '#10B981',
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: 'center',
   },
-  reopenBtn: { // <<< [เพิ่ม] สไตล์ปุ่มเปิด
-    backgroundColor: '#F59E0B', // สีส้ม
+  reopenBtn: {
+    backgroundColor: '#F59E0B',
   },
   deleteBtn: { flex: 1, backgroundColor: '#ef4444', paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
   btnText: { color: '#fff', fontWeight: '800' },
-  // side menu
+
   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,.35)', zIndex: 5 },
   sideMenu: { position: 'absolute', right: 0, top: 0, bottom: 0, width: SIDE_WIDTH, backgroundColor: '#fff', zIndex: 6, paddingTop: 14, paddingHorizontal: 14, borderLeftWidth: 1, borderColor: '#eaeaea' },
   sideHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },

@@ -9,7 +9,7 @@ export async function scheduleNotification(title: string, body: string) {
       title,
       body,
     },
-    trigger: null, // fire immediately
+    trigger: null,
   });
 }
 

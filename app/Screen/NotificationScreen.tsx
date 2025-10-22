@@ -8,9 +8,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useUser } from '../../context/UserContext';
 import API from '../../android/app/src/config';
-import dayjs from 'dayjs'; 
-import 'dayjs/locale/th'; 
-dayjs.locale('th'); 
+import dayjs from 'dayjs';
+import 'dayjs/locale/th';
+dayjs.locale('th');
 
 
 type Notification = {
@@ -22,59 +22,59 @@ type Notification = {
   related_post_type: 'fh' | 'fp' | null;
   related_post_id: number | null;
   type: 'report_resolution_reporter' | 'report_resolution_poster' | 'match_found' | 'new_comment' | 'new_reply';
-  related_comment_id?: number | null; 
+  related_comment_id?: number | null;
 };
 
-// --- API FUNCTIONS (ใช้ URL จาก config.js) ---
-const apiFetchNotifications = async (userId: number): Promise<Notification[]> => {
-    if (!userId) throw new Error("User not logged in.");
-    
-    const url = `${API.GET_NOTIFICATIONS}?user_id=${userId}`;
-    console.log(`[API CALL] Fetching notifications from: ${url}`);
 
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Server returned status: ${response.status}`);
-        }
-        const data = await response.json();
-        
-        if (data.error) {
-            throw new Error(data.error);
-        }
-        
-        return data.notifications || [];
-    } catch (error: any) {
-        throw new Error(error.message || "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์เพื่อดึงข้อมูลแจ้งเตือนได้");
+const apiFetchNotifications = async (userId: number): Promise<Notification[]> => {
+  if (!userId) throw new Error("User not logged in.");
+
+  const url = `${API.GET_NOTIFICATIONS}?user_id=${userId}`;
+  console.log(`[API CALL] Fetching notifications from: ${url}`);
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Server returned status: ${response.status}`);
     }
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    return data.notifications || [];
+  } catch (error: any) {
+    throw new Error(error.message || "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์เพื่อดึงข้อมูลแจ้งเตือนได้");
+  }
 };
 
 const apiMarkNotificationAsRead = async (notificationId: number) => {
-    const url = API.MARK_NOTIFICATION_READ;
-    console.log(`[API CALL] Marking notification as read on: ${url}`);
-    
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ notification_id: notificationId }),
-        });
+  const url = API.MARK_NOTIFICATION_READ;
+  console.log(`[API CALL] Marking notification as read on: ${url}`);
 
-        const data = await response.json();
-        if (data.error) {
-            throw new Error(data.error);
-        }
-        
-        if (!response.ok) {
-             throw new Error("เซิร์ฟเวอร์ปฏิเสธการอัปเดตสถานะ");
-        }
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notification_id: notificationId }),
+    });
 
-        return data;
-    } catch (error: any) {
-        throw new Error(error.message || "เกิดข้อผิดพลาดในการอัปเดตสถานะแจ้งเตือน");
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
     }
+
+    if (!response.ok) {
+      throw new Error("เซิร์ฟเวอร์ปฏิเสธการอัปเดตสถานะ");
+    }
+
+    return data;
+  } catch (error: any) {
+    throw new Error(error.message || "เกิดข้อผิดพลาดในการอัปเดตสถานะแจ้งเตือน");
+  }
 };
-// ----------------------------------------------
+
 
 const NotificationScreen: React.FC = () => {
   const { user } = useUser();
@@ -116,63 +116,63 @@ const NotificationScreen: React.FC = () => {
   const handlePressNotification = useCallback(async (item: Notification) => {
     if (!user) return;
 
-    // 1. Mark as read (ถ้ายังไม่ได้อ่าน)
+
     if (item.is_read === 0) {
-        try {
-            await apiMarkNotificationAsRead(item.id);
-            setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: 1 as 1 } : n));
-        } catch(e: any) {
-             console.error("Failed to mark as read:", e);
-        }
+      try {
+        await apiMarkNotificationAsRead(item.id);
+        setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: 1 as 1 } : n));
+      } catch (e: any) {
+        console.error("Failed to mark as read:", e);
+      }
     }
-    
-    // 2. Logic การนำทาง
+
+
     const { related_post_type, related_post_id } = item;
 
-    // ตรวจสอบว่ามีข้อมูลโพสต์ที่จำเป็นสำหรับการนำทางหรือไม่
+
     if (!related_post_type || !related_post_id) {
-        // หากไม่มีข้อมูลโพสต์ ให้แสดง Alert แจ้งเตือนทั่วไปแล้วจบ
-        Alert.alert(item.title, item.message.replace(/\*\*/g, ''));
-        return; 
+
+      Alert.alert(item.title, item.message.replace(/\*\*/g, ''));
+      return;
     }
 
-    const navParams: any = { 
-        postId: related_post_id, 
-        postType: related_post_type,
-        customTitle: related_post_type === 'fh' ? 'โพสต์หาบ้าน' : 'โพสต์รับเลี้ยง',
-        commentIdToScroll: item.related_comment_id || undefined 
+    const navParams: any = {
+      postId: related_post_id,
+      postType: related_post_type,
+      customTitle: related_post_type === 'fh' ? 'โพสต์หาบ้าน' : 'โพสต์รับเลี้ยง',
+      commentIdToScroll: item.related_comment_id || undefined
     };
 
     switch (item.type) {
-        case 'new_comment':
-        case 'new_reply': // ✅ แก้ไข: รวม new_reply และนำทาง
-        case 'match_found':
-            navigation.navigate('PostDetail', navParams);
-            break; 
+      case 'new_comment':
+      case 'new_reply':
+      case 'match_found':
+        navigation.navigate('PostDetail', navParams);
+        break;
 
-        case 'report_resolution_poster':
-        case 'report_resolution_reporter':
-            // แจ้งเตือนเท่านั้น เพราะโพสต์ถูกดำเนินการลบแล้ว
-            Alert.alert(item.title, `${item.message.replace(/\*\*/g, '')}\n\n[สถานะ: โพสต์ถูกลบออกจากระบบ]`);
-            break;
+      case 'report_resolution_poster':
+      case 'report_resolution_reporter':
 
-        default:
-            // หากเข้าถึง switch ได้ แต่เป็น type ที่ไม่รู้จักและมี post_id ก็แสดง alert แล้วจบ
-            Alert.alert(item.title, item.message.replace(/\*\*/g, ''));
-            break;
+        Alert.alert(item.title, `${item.message.replace(/\*\*/g, '')}\n\n[สถานะ: โพสต์ถูกลบออกจากระบบ]`);
+        break;
+
+      default:
+
+        Alert.alert(item.title, item.message.replace(/\*\*/g, ''));
+        break;
     }
   }, [user, navigation]);
 
 
   const renderItem: ListRenderItem<Notification> = ({ item }) => {
     const isUnread = item.is_read === 0;
-    
+
     const formatDateTime = (dateString: string) => {
-      // รูปแบบ 05 ต.ค. 2025 01:06
+
       return dayjs(dateString).format('D MMM YYYY HH:mm น.');
     };
 
-    // ลบ ** ออกจากข้อความหากมี
+
     const messageContent = item.message.replace(/\*\*/g, '');
 
     return (
@@ -182,11 +182,11 @@ const NotificationScreen: React.FC = () => {
       >
         <View style={styles.icon}>
           {item.type === 'new_comment' || item.type === 'new_reply' ? (
-              <Ionicons name="chatbubble-ellipses-outline" size={24} color={isUnread ? '#10b981' : '#888'} />
+            <Ionicons name="chatbubble-ellipses-outline" size={24} color={isUnread ? '#10b981' : '#888'} />
           ) : item.type.includes('report_resolution') ? (
-              <Ionicons name="shield-checkmark-outline" size={24} color={isUnread ? '#10b981' : '#888'} />
+            <Ionicons name="shield-checkmark-outline" size={24} color={isUnread ? '#10b981' : '#888'} />
           ) : (
-              <Ionicons name="notifications-outline" size={24} color={isUnread ? '#10b981' : '#888'} />
+            <Ionicons name="notifications-outline" size={24} color={isUnread ? '#10b981' : '#888'} />
           )}
         </View>
         <View style={styles.content}>
@@ -226,7 +226,7 @@ const NotificationScreen: React.FC = () => {
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
         ListEmptyComponent={
-          <View style={styles.emptyCentered}> 
+          <View style={styles.emptyCentered}>
             <Ionicons name="notifications-off-outline" size={60} color="#ccc" style={{ marginBottom: 10 }} />
             <Text style={styles.emptyText}>ไม่มีรายการแจ้งเตือนในขณะนี้</Text>
             <Text style={styles.emptySubText}>รายการจะปรากฏที่นี่เมื่อมีกิจกรรมใหม่</Text>
@@ -243,19 +243,19 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyCentered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 100 },
-  listContent: { flexGrow: 1, justifyContent: 'flex-start' }, 
+  listContent: { flexGrow: 1, justifyContent: 'flex-start' },
   item: {
     flexDirection: 'row',
     padding: 15,
-    paddingRight: 30, 
+    paddingRight: 30,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#eee',
     backgroundColor: '#fff',
     alignItems: 'flex-start',
   },
-  unreadItem: { 
-    backgroundColor: '#f5fff8', // สีอ่อนมาก ๆ สำหรับรายการที่ยังไม่ได้อ่าน
-  }, 
+  unreadItem: {
+    backgroundColor: '#f5fff8',
+  },
   icon: { marginRight: 15, marginTop: 2 },
   content: { flex: 1 },
   title: { fontSize: 15, fontWeight: 'bold', color: '#111' },
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#ef4444', // สีแดง
+    backgroundColor: '#ef4444',
   }
 });
 

@@ -32,10 +32,10 @@ const ChatListScreen = () => {
   const { setHasNewMessage } = useChatList();
 
   useFocusEffect(
-  React.useCallback(() => {
-    setHasNewMessage(false); // ✅ clear notification dot
-  }, [])
-);
+    React.useCallback(() => {
+      setHasNewMessage(false);
+    }, [])
+  );
 
   const renderItem = ({ item }: any) => (
     <TouchableOpacity
@@ -74,7 +74,7 @@ const ChatListScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      
+
       <FlatList
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 16 }}
@@ -136,6 +136,6 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     backgroundColor: '#eee',
-    marginLeft: 84, // ให้บรรทัดตรงกับข้อความไม่ชน avatar
+    marginLeft: 84,
   },
 });

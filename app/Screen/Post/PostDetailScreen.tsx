@@ -19,9 +19,9 @@ dayjs.locale('th');
 const PAGE_SIZE = 20;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// ================= ส่วนที่แก้ไข 1: สร้าง Component สำหรับรูปภาพโดยเฉพาะ =================
+
 const ImageCarousel = ({ media }: { media: string[] }) => {
-  // ย้าย State และ Logic ที่เกี่ยวกับรูปภาพมาไว้ที่นี่
+
   const [activeIndex, setActiveIndex] = useState(0);
 
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
@@ -32,7 +32,7 @@ const ImageCarousel = ({ media }: { media: string[] }) => {
   }).current;
 
   if (!media || media.length === 0) {
-    return null; // ไม่แสดงอะไรเลยถ้าไม่มีรูป
+    return null;
   }
 
   return (
@@ -71,7 +71,7 @@ const ImageCarousel = ({ media }: { media: string[] }) => {
           );
         }}
       />
-      {/* Component สำหรับแสดง Dots */}
+
       {media.length > 1 && (
         <View style={styles.paginationContainer}>
           {media.map((_, index) => (
@@ -88,7 +88,6 @@ const ImageCarousel = ({ media }: { media: string[] }) => {
     </>
   );
 };
-// =================================================================================
 
 
 type Post = {
@@ -107,7 +106,7 @@ type Post = {
   reason: string;
   adoptionTerms: string;
   user: string;
-  postType: string; // 'fh' | 'fp'
+  postType: string;
   post_date: string;
   id: string | number;
   environment?: string;
@@ -189,8 +188,8 @@ const formatType = (t: string) => {
 const formatAge = (min?: string, max?: string, age?: string) => {
   if (age) return age;
   if (min && max) {
-    if (min === max) return min; // same -> show single
-    return `${min} – ${max}`;    // range with en dash
+    if (min === max) return min;
+    return `${min} – ${max}`;
   }
   if (min) return `≥ ${min}`;
   if (max) return `≤ ${max}`;
@@ -213,11 +212,11 @@ const PostDetailScreen = () => {
   const routeParams = route.params as any;
 
   const initialPost: Post = routeParams?.post || {
-      id: routeParams?.postId || 0,
-      postType: routeParams?.postType || '',
-      title: 'กำลังโหลด', user: '', image: [],
-      type: '', breed: '', sex: '', color: '', steriliz: '', vaccine: '',
-      personality: '', reason: '', adoptionTerms: '', post_date: ''
+    id: routeParams?.postId || 0,
+    postType: routeParams?.postType || '',
+    title: 'กำลังโหลด', user: '', image: [],
+    type: '', breed: '', sex: '', color: '', steriliz: '', vaccine: '',
+    personality: '', reason: '', adoptionTerms: '', post_date: ''
   };
 
   const [post, setPost] = useState<Post>(initialPost);
@@ -281,7 +280,7 @@ const PostDetailScreen = () => {
       if (!text) return;
 
       const data = (() => {
-        try { return JSON.parse(text); } 
+        try { return JSON.parse(text); }
         catch (e) { console.warn('Failed to parse JSON response:', e, 'Raw response:', text); return {}; }
       })();
 
@@ -301,7 +300,7 @@ const PostDetailScreen = () => {
 
   useEffect(() => {
     if (!loading && !post.id && initialPost.id === 0) {
-        Alert.alert('ข้อผิดพลาด', 'ไม่พบข้อมูลโพสต์ที่ต้องการ');
+      Alert.alert('ข้อผิดพลาด', 'ไม่พบข้อมูลโพสต์ที่ต้องการ');
     }
   }, [loading, post.id, initialPost.id]);
 
@@ -315,7 +314,7 @@ const PostDetailScreen = () => {
       const data = await res.json();
       const one = Array.isArray(data) ? data.find((u: any) => u.username === post.user) : (data?.user || data);
       setPoster(one || null);
-    } catch {}
+    } catch { }
   }, [post.user, poster]);
 
   const buildCommentsUrl = useCallback((pageNum: number) => {
@@ -431,11 +430,11 @@ const PostDetailScreen = () => {
 
   const avatarUri = useMemo(() =>
     poster?.profilePicture ? `${API.PROFILE_PIC_PATH}/${poster.profilePicture}` : null,
-  [poster?.profilePicture]);
+    [poster?.profilePicture]);
 
   const goToLogin = useCallback(() => {
     try { navigation.navigate('Login' as any); }
-    catch { try { navigation.navigate('LoginScreen' as any); } catch {} }
+    catch { try { navigation.navigate('LoginScreen' as any); } catch { } }
   }, [navigation]);
 
   const loadReportReasons = useCallback(async () => {
@@ -522,7 +521,7 @@ const PostDetailScreen = () => {
                 <MaterialCommunityIcons name="flag-variant" size={22} color="#B91C1C" />
               </TouchableOpacity>
             </View>
-          ) : ( <View style={{ width: 64 }} /> )}
+          ) : (<View style={{ width: 64 }} />)}
         </View>
       ),
     });
@@ -534,7 +533,7 @@ const PostDetailScreen = () => {
 
   const fullMediaList = useMemo<string[]>(() =>
     (mediaList || []).map((uri) => `${API.UPLOAD_PATH}${String(uri).replace(/^uploads[\\/]+/, '')}`),
-  [mediaList]);
+    [mediaList]);
 
   const handleReplyPress = useCallback((comment: Comment | Reply) => {
     if (!user) { goToLogin(); return; }
@@ -589,7 +588,7 @@ const PostDetailScreen = () => {
     setLoadingMore(false);
     setTimeout(() => { endReachLockRef.current = false; }, 250);
   }, [loadingMore, hasMore, page, fetchCommentsPage]);
-  
+
   const scrollToComment = useCallback(() => {
     const commentIdToScroll = route.params as any;
     const targetCommentId = commentIdToScroll?.commentIdToScroll;
@@ -599,36 +598,34 @@ const PostDetailScreen = () => {
     const targetIndex = comments.findIndex(c => String(c.id) === targetRootId);
 
     if (targetIndex !== -1) {
-        setExpandedTop(prev => ({ ...prev, [targetRootId]: true }));
-        listRef.current.scrollToIndex({ index: targetIndex + 1, animated: true, viewPosition: 0.2 });
-        scrollExecutedRef.current = true;
+      setExpandedTop(prev => ({ ...prev, [targetRootId]: true }));
+      listRef.current.scrollToIndex({ index: targetIndex + 1, animated: true, viewPosition: 0.2 });
+      scrollExecutedRef.current = true;
     }
   }, [comments, route.params, getRootId]);
 
   useEffect(() => {
     const unsub = navigation.addListener('focus', () => {
       if (initialPost.id) {
-          fetchPost();
-          fetchPoster();
-          fetchCommentsPage(1, true);
-          scrollExecutedRef.current = false;
+        fetchPost();
+        fetchPoster();
+        fetchCommentsPage(1, true);
+        scrollExecutedRef.current = false;
       }
     });
     return unsub;
   }, [navigation, initialPost.id]);
 
   useEffect(() => {
-      if (comments.length > 0 && !scrollExecutedRef.current) {
-          const timer = setTimeout(scrollToComment, 100);
-          return () => clearTimeout(timer);
-      }
+    if (comments.length > 0 && !scrollExecutedRef.current) {
+      const timer = setTimeout(scrollToComment, 100);
+      return () => clearTimeout(timer);
+    }
   }, [comments, scrollToComment]);
 
   const ListHeader = useMemo(() => () => (
     <View>
-      {/* ================= ส่วนที่แก้ไข 2: ใช้ Component ImageCarousel ================= */}
       <ImageCarousel media={fullMediaList} />
-      {/* ========================================================================= */}
 
       <View style={{ marginTop: 12 }}>
         <Text style={styles.title}>{post.title}</Text>
@@ -661,7 +658,7 @@ const PostDetailScreen = () => {
         </View>
       </View>
     </View>
-  ), [fullMediaList, post, comments.length, totalCount]); // ลบ activeIndex ออกจาก dependency array
+  ), [fullMediaList, post, comments.length, totalCount]);
 
   const renderNested = useCallback((parentId: string, depth: number = 1): React.ReactNode => {
     const children = childMap[parentId] || [];
@@ -684,8 +681,8 @@ const PostDetailScreen = () => {
               </Text>
               <Text style={styles.replyContent}>{r.content}</Text>
               <View style={styles.replyActionsRow}>
-                {user ? ( <TouchableOpacity onPress={() => handleReplyPress(r as any)} style={styles.actionBtn}><Text style={styles.actionText}>ตอบกลับ</Text></TouchableOpacity>
-                ) : ( <TouchableOpacity onPress={goToLogin} style={styles.loginHintBtn}><Text style={styles.loginHintText}>ล็อคอินเพื่อตอบกลับ</Text></TouchableOpacity> )}
+                {user ? (<TouchableOpacity onPress={() => handleReplyPress(r as any)} style={styles.actionBtn}><Text style={styles.actionText}>ตอบกลับ</Text></TouchableOpacity>
+                ) : (<TouchableOpacity onPress={goToLogin} style={styles.loginHintBtn}><Text style={styles.loginHintText}>ล็อคอินเพื่อตอบกลับ</Text></TouchableOpacity>)}
               </View>
               {grandchildren.length > 0 && <View>{renderNested(rid, depth + 1)}</View>}
             </View>
@@ -705,7 +702,7 @@ const PostDetailScreen = () => {
     return (
       <View style={[styles.commentCard, { backgroundColor: alt }]}>
         <View style={styles.commentHeader}>
-          {avatar ? ( <Image source={{ uri: avatar }} style={styles.commentAvatar} /> ) : ( <View style={[styles.commentAvatar, { backgroundColor: '#E5E7EB' }]} /> )}
+          {avatar ? (<Image source={{ uri: avatar }} style={styles.commentAvatar} />) : (<View style={[styles.commentAvatar, { backgroundColor: '#E5E7EB' }]} />)}
           <View style={{ flex: 1 }}>
             <Text style={styles.commentName}>{displayName}</Text>
             <Text style={styles.commentTime}>{formatDateTime(item.created_at)}</Text>
@@ -714,8 +711,8 @@ const PostDetailScreen = () => {
         <Text style={styles.commentContent}>{item.content}</Text>
         <View style={styles.commentActions}>
           <View style={{ flex: 1 }} />
-          {user ? ( <TouchableOpacity onPress={() => handleReplyPress(item)} style={styles.actionBtn}><Text style={styles.actionText}>ตอบกลับ</Text></TouchableOpacity>
-          ) : ( <TouchableOpacity onPress={goToLogin} style={styles.loginHintBtn}><Text style={styles.loginHintText}>ล็อคอินเพื่อตอบกลับ</Text></TouchableOpacity> )}
+          {user ? (<TouchableOpacity onPress={() => handleReplyPress(item)} style={styles.actionBtn}><Text style={styles.actionText}>ตอบกลับ</Text></TouchableOpacity>
+          ) : (<TouchableOpacity onPress={goToLogin} style={styles.loginHintBtn}><Text style={styles.loginHintText}>ล็อคอินเพื่อตอบกลับ</Text></TouchableOpacity>)}
         </View>
         {!!rc && !isOpen ? (
           <TouchableOpacity onPress={async () => { setExpandedTop(prev => ({ ...prev, [idStr]: true })); await fetchThread(idStr); }} style={styles.viewRepliesBar} activeOpacity={0.9}>
@@ -739,7 +736,7 @@ const PostDetailScreen = () => {
 
   return (
     <View style={styles.container}>
-      {loading && ( <View style={styles.loadingOverlay}><ActivityIndicator size="large" color="#3C2C91" /><Text style={styles.loadingText}>กำลังโหลดข้อมูล...</Text></View> )}
+      {loading && (<View style={styles.loadingOverlay}><ActivityIndicator size="large" color="#3C2C91" /><Text style={styles.loadingText}>กำลังโหลดข้อมูล...</Text></View>)}
       <FlatList ref={listRef} data={comments} keyExtractor={(c, idx) => `c-${idKey(c)}-${idx}`} renderItem={renderComment} ListHeaderComponent={ListHeader} ListFooterComponent={ListFooter} contentContainerStyle={{ paddingBottom: 120 }} refreshing={refreshing} onRefresh={() => fetchCommentsPage(1, true)} onEndReached={onEndReached} onEndReachedThreshold={0.3} initialNumToRender={6} windowSize={9} maxToRenderPerBatch={6} updateCellsBatchingPeriod={50} removeClippedSubviews showsVerticalScrollIndicator={false} />
       <Modal visible={reportOpen} transparent animationType="slide" onRequestClose={() => setReportOpen(false)}>
         <View style={styles.modalBackdrop}>
@@ -797,7 +794,7 @@ const styles = StyleSheet.create({
   media: { width: SCREEN_WIDTH - 32, height: 260, borderRadius: 10, overflow: 'hidden' },
   counterBadge: { position: 'absolute', top: 18, right: 24, backgroundColor: 'rgba(0,0,0,0.45)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, zIndex: 10 },
   counterText: { color: '#fff', fontWeight: '700', fontSize: 12 },
-  // ================= ส่วนที่แก้ไข 3: เพิ่ม Style สำหรับ Dots =================
+
   paginationContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -808,13 +805,12 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#D1D5DB', // สีเทาสำหรับ dot ที่ไม่ถูกเลือก
+    backgroundColor: '#D1D5DB',
     marginHorizontal: 4,
   },
   paginationDotActive: {
-    backgroundColor: '#4F46E5', // สีม่วงสำหรับ dot ที่ถูกเลือก
+    backgroundColor: '#4F46E5',
   },
-  // =====================================================================
   title: { fontSize: 22, fontWeight: 'bold', color: '#111827', marginBottom: 16, paddingHorizontal: 16 },
   detailRow: { padding: 12, borderRadius: 12, marginBottom: 10, marginHorizontal: 16 },
   detailLabel: { fontWeight: 'bold', color: '#C09E00' },
@@ -864,22 +860,22 @@ const styles = StyleSheet.create({
   sendText: { color: '#ffffff', fontWeight: '700' },
   loginHintBtn: { marginLeft: 'auto', paddingVertical: 6, paddingHorizontal: 8 },
   loginHintText: { color: '#9CA3AF', fontStyle: 'italic' },
-  modalBackdrop: { flex:1, backgroundColor:'rgba(0,0,0,0.4)', justifyContent:'flex-end' },
-  modalCard: { backgroundColor:'#fff', borderTopLeftRadius:16, borderTopRightRadius:16, padding:16 },
-  modalTitle: { fontSize:18, fontWeight:'700', color:'#111827', marginBottom:8 },
-  modalLabel: { fontWeight:'700', color:'#4B5563', marginBottom:6 },
-  pillWrap: { flexDirection:'row', flexWrap:'wrap' },
-  pill: { paddingHorizontal:12, paddingVertical:6, borderRadius:999, borderWidth:1, borderColor:'#E5E7EB', backgroundColor:'#F9FAFB', marginRight:8, marginBottom:8 },
-  pillActive: { backgroundColor:'#FEF3C7', borderColor:'#F59E0B' },
-  pillText: { color:'#374151' },
-  pillTextActive: { fontWeight:'700', color:'#92400E' },
-  modalInput: { minHeight:60, borderWidth:1, borderColor:'#E5E7EB', borderRadius:10, padding:10, backgroundColor:'#F9FAFB', color:'#111827' },
-  modalActions: { flexDirection:'row', justifyContent:'flex-end', marginTop:12 },
-  modalBtn: { paddingHorizontal:14, paddingVertical:10, borderRadius:10, marginLeft:8 },
-  modalCancel: { backgroundColor:'#F3F4F6' },
-  modalSubmit: { backgroundColor:'#34D399' },
-  modalCancelText: { color:'#111827', fontWeight:'700' },
-  modalSubmitText: { color:'#fff', fontWeight:'700' },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  modalCard: { backgroundColor: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 16 },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 8 },
+  modalLabel: { fontWeight: '700', color: '#4B5563', marginBottom: 6 },
+  pillWrap: { flexDirection: 'row', flexWrap: 'wrap' },
+  pill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#F9FAFB', marginRight: 8, marginBottom: 8 },
+  pillActive: { backgroundColor: '#FEF3C7', borderColor: '#F59E0B' },
+  pillText: { color: '#374151' },
+  pillTextActive: { fontWeight: '700', color: '#92400E' },
+  modalInput: { minHeight: 60, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 10, padding: 10, backgroundColor: '#F9FAFB', color: '#111827' },
+  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 12 },
+  modalBtn: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, marginLeft: 8 },
+  modalCancel: { backgroundColor: '#F3F4F6' },
+  modalSubmit: { backgroundColor: '#34D399' },
+  modalCancelText: { color: '#111827', fontWeight: '700' },
+  modalSubmitText: { color: '#fff', fontWeight: '700' },
 });
 
 export default PostDetailScreen;

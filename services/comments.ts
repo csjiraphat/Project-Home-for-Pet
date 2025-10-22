@@ -25,7 +25,7 @@ export async function getComments(postType: "fh" | "fp", postId: number, usernam
   const url = `${API.COMMENTS_LIST}?post_type=${postType}&post_id=${postId}&username=${encodeURIComponent(username || "")}`;
   try {
     const res = await fetch(url);
-    const text = await res.text(); // some hosts return text/plain
+    const text = await res.text();
     let data: any;
     try { data = JSON.parse(text); } catch { data = { comments: [] }; }
     console.log("DEBUG[getComments] url=", url, "resp=", data);

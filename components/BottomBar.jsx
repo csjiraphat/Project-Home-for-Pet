@@ -42,7 +42,7 @@ const BottomBar = () => {
       setShowLoginPrompt(true);
       return;
     }
-    setHasNewMessage(false); // ✅ รีเซ็ตจุดแดงเมื่อเข้าไปหน้าแชท
+    setHasNewMessage(false);
     if (currentRoute !== "ChatListScreen")
       navigation.navigate("ChatListScreen");
     else console.log("รีเฟรชหน้า Chat");
@@ -95,7 +95,6 @@ const BottomBar = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Custom Modal for Login Prompt */}
       <Modal
         visible={showLoginPrompt}
         transparent

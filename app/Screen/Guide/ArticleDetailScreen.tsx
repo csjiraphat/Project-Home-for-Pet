@@ -1,12 +1,10 @@
 // app/Screen/Guide/ArticleDetailScreen.tsx
-// VVV --- This is the line to fix --- VVV
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Image, Dimensions, useWindowDimensions, Linking, TouchableOpacity, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import API from "../../../android/app/src/config";
 import RenderHTML from 'react-native-render-html';
 
-// --- Types ---
 type ArticleDetail = {
     id: number;
     title: string;
@@ -41,7 +39,6 @@ const makeAbsolute = (u?: string): string => {
     }
 };
 
-// --- Component ---
 export default function ArticleDetailScreen() {
     const route = useRoute();
     const { id } = route.params as { id: number };
@@ -90,7 +87,7 @@ export default function ArticleDetailScreen() {
             }
         }
     }, []);
-    
+
     if (isLoading) {
         return (
             <View style={styles.loadingContainer}>

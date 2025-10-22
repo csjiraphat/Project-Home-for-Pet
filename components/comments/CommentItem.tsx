@@ -12,9 +12,9 @@ type Props = {
 
 function toAvatarUri(raw?: string | null) {
   if (!raw) return null;
-  // ถ้าเป็น URL เต็มอยู่แล้ว ใช้ได้เลย
+
   if (/^https?:\/\//i.test(raw)) return `${raw}?t=${Date.now()}`;
-  // กรณีเป็นแค่ไฟล์เนม เช่น "profile_xxx.jpeg" → ต่อด้วย API.PROFILE_PIC_PATH
+
   const base = API.PROFILE_PIC_PATH?.replace(/\/$/, "") || "";
   return `${base}/${raw}?t=${Date.now()}`;
 }
@@ -55,7 +55,7 @@ const CommentItem: React.FC<Props> = ({ item, depth = 0, onReplyPress, onLikePre
         <Text style={styles.time}>{new Date(item.created_at).toLocaleString("th-TH")}</Text>
       </View>
       {item.children?.map((child) => (
-        <CommentItem key={child.id} item={child} depth={depth + 1} onReplyPress={onReplyPress} onLikePress={onLikePress}/>
+        <CommentItem key={child.id} item={child} depth={depth + 1} onReplyPress={onReplyPress} onLikePress={onLikePress} />
       ))}
     </View>
   );

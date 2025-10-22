@@ -20,35 +20,28 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
     setPasswordMatch(password === confirmPassword);
   }, [password, confirmPassword]);
 
-  // ✅ ฟังก์ชัน handleRegister ที่แก้ไขแล้ว
   const handleRegister = () => {
     if (!passwordMatch) {
       Alert.alert('ข้อผิดพลาด', 'รหัสผ่านไม่ตรงกัน');
       return;
     }
 
-    // ส่งข้อมูลไปลงทะเบียนโดยตรง โดยไม่ต้องเช็คอีเมลซ้ำก่อน
-    // เพราะ Server (users.php) มีการเช็คให้อยู่แล้ว
     fetch(API.USERS, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      // 👇 เพิ่ม action=register เข้าไปใน body
       body: `action=register&username=${username}&email=${email}&password=${password}&userType=${userType}`,
     })
-      .then((response) => response.json()) // แปลง response เป็น JSON
+      .then((response) => response.json())
       .then((data) => {
-        // ตรวจสอบ response จาก server
+
         if (data.error) {
-          // ถ้ามี error (เช่น "อีเมลนี้ถูกใช้งานแล้ว") ให้แสดง Alert
           Alert.alert('ลงทะเบียนไม่สำเร็จ', data.error);
         } else if (data.message) {
-          // ถ้าสำเร็จ (มี message)
           Alert.alert('สำเร็จ', 'ลงทะเบียนเรียบร้อยแล้ว');
           navigation.navigate('Login');
         } else {
-          // กรณีอื่นๆ ที่ไม่คาดคิด
           Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถลงทะเบียนได้');
         }
       })

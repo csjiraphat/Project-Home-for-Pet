@@ -4,7 +4,6 @@ import { View, Text, StyleSheet, Pressable, TextInput, Image, ActivityIndicator,
 import API, { buildQuery } from "../../../android/app/src/config";
 import { useNavigation } from '@react-navigation/native';
 
-// --- Types ---
 type Species = 'dog' | 'cat';
 type ArticleSummary = {
   id: number;
@@ -16,7 +15,6 @@ type ArticleSummary = {
   image_url: string | null;
 };
 
-// --- Config / Constants ---
 const COLORS = {
   bg: '#FFFFFF',
   purpleDark: '#2D2754',
@@ -45,34 +43,28 @@ const makeAbsolute = (u?: string): string => {
   }
 };
 
-// VVV --- ส่วนที่แก้ไข 1: เพิ่มฟังก์ชันถอดรหัส HTML Entities --- VVV
 const decodeHtmlEntities = (text: string): string => {
-    if (!text) return '';
-    return text
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&hellip;/g, '…')
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        // เพิ่มการแทนที่อื่นๆ ที่พบบ่อยได้ที่นี่
-        .replace(/&lsquo;/g, '‘')
-        .replace(/&rsquo;/g, '’')
-        .replace(/&ldquo;/g, '“')
-        .replace(/&rdquo;/g, '”');
-};
-// ^^^ --- จบส่วนที่แก้ไข --- ^^^
+  if (!text) return '';
+  return text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&hellip;/g, '…')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
 
-// --- Components ---
+    .replace(/&lsquo;/g, '‘')
+    .replace(/&rsquo;/g, '’')
+    .replace(/&ldquo;/g, '“')
+    .replace(/&rdquo;/g, '”');
+};
 const ArticleCard: React.FC<{ item: ArticleSummary; navigation: any; }> = React.memo(({ item, navigation }) => {
   const imageUrl = makeAbsolute(item.image_url || '');
   const navigateToDetail = () => navigation.navigate('ArticleDetail', { id: item.id });
 
-  // VVV --- ส่วนที่แก้ไข 2: เรียกใช้ฟังก์ชันถอดรหัสกับ title และ snippet --- VVV
   const decodedTitle = decodeHtmlEntities(item.title);
   const decodedSnippet = decodeHtmlEntities(item.snippet);
-  // ^^^ --- จบส่วนที่แก้ไข --- ^^^
 
   return (
     <Pressable style={styles.card} onPress={navigateToDetail}>
@@ -85,24 +77,21 @@ const ArticleCard: React.FC<{ item: ArticleSummary; navigation: any; }> = React.
         />
       ) : (
         <View style={[styles.cardImage, styles.noImage]}>
-            <Text style={{color: COLORS.textSecondary}}>No Image</Text>
+          <Text style={{ color: COLORS.textSecondary }}>No Image</Text>
         </View>
       )}
       <View style={styles.cardBody}>
-        {/* VVV --- ส่วนที่แก้ไข 3: ใช้ตัวแปรที่ถอดรหัสแล้วมาแสดงผล --- VVV */}
         <Text style={styles.cardTitle} numberOfLines={2}>{decodedTitle}</Text>
         <Text style={styles.cardSnippet} numberOfLines={3}>{decodedSnippet}</Text>
-        {/* ^^^ --- จบส่วนที่แก้ไข --- ^^^ */}
         <View style={styles.cardFooter}>
-            <Text style={styles.cardTags} numberOfLines={1}>{item.tags || '—'}</Text>
-            <Text style={styles.cardDate}>เผยแพร่: {item.published_at}</Text>
+          <Text style={styles.cardTags} numberOfLines={1}>{item.tags || '—'}</Text>
+          <Text style={styles.cardDate}>เผยแพร่: {item.published_at}</Text>
         </View>
       </View>
     </Pressable>
   );
 });
 
-// --- Main Screen ---
 export default function GuideScreen() {
   const navigation = useNavigation();
 
@@ -193,7 +182,6 @@ export default function GuideScreen() {
         ))}
       </View>
 
-      {/* Search Box */}
       <View style={styles.searchBox}>
         <TextInput
           style={styles.searchInput}
@@ -204,7 +192,7 @@ export default function GuideScreen() {
           onSubmitEditing={onSubmitSearch}
         />
         <Pressable style={styles.searchBtn} onPress={onPressSearch} disabled={isLoading && !isRefreshing}>
-            <Text style={{ color: COLORS.textSecondary }}>ค้นหา</Text>
+          <Text style={{ color: COLORS.textSecondary }}>ค้นหา</Text>
         </Pressable>
       </View>
 
@@ -222,9 +210,9 @@ export default function GuideScreen() {
           contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl
-                refreshing={isRefreshing}
-                onRefresh={handleRefresh}
-                tintColor={COLORS.purpleDark}
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={COLORS.purpleDark}
             />
           }
           ListEmptyComponent={
@@ -241,34 +229,34 @@ export default function GuideScreen() {
 }
 
 const styles = StyleSheet.create({
-  container:{ flex:1, backgroundColor: COLORS.bg },
-  searchBox:{ flexDirection:'row', gap:8, padding:12, borderBottomWidth:1, borderColor: COLORS.border },
-  searchInput:{ flex:1, backgroundColor:'#F3F4F6', borderRadius:8, paddingHorizontal:12, height:42, color: COLORS.textPrimary },
-  searchBtn:{ backgroundColor:'#FFF', borderWidth:1, borderColor:COLORS.border, borderRadius:8, paddingHorizontal:12, alignItems:'center', justifyContent:'center' },
-  tabBar:{
-    flexDirection:'row',
+  container: { flex: 1, backgroundColor: COLORS.bg },
+  searchBox: { flexDirection: 'row', gap: 8, padding: 12, borderBottomWidth: 1, borderColor: COLORS.border },
+  searchInput: { flex: 1, backgroundColor: '#F3F4F6', borderRadius: 8, paddingHorizontal: 12, height: 42, color: COLORS.textPrimary },
+  searchBtn: { backgroundColor: '#FFF', borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' },
+  tabBar: {
+    flexDirection: 'row',
     backgroundColor: COLORS.purpleDark,
     paddingHorizontal: 8,
     paddingTop: 8,
   },
-  tabItem:{
-    flex:1,
+  tabItem: {
+    flex: 1,
     paddingVertical: 14,
-    alignItems:'center',
+    alignItems: 'center',
     borderRadius: 8,
   },
-  tabActive:{
+  tabActive: {
     backgroundColor: '#5A528A',
   },
   tabPressed: {
     backgroundColor: '#433C6D',
   },
-  tabText:{
-    color:'#C9CBE6',
-    fontWeight:'600',
+  tabText: {
+    color: '#C9CBE6',
+    fontWeight: '600',
     fontSize: 16,
   },
-  tabTextActive:{
+  tabTextActive: {
     color: '#FFFFFF',
   },
   listContent: { paddingHorizontal: 12, paddingVertical: 16 },

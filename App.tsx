@@ -6,14 +6,12 @@ import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as NavigationBar from 'expo-navigation-bar';
 import * as Device from 'expo-device';
-import SplashScreen from './app/Screen/SplashScreen'; // 👈 เพิ่มบรรทัดนี้
+import SplashScreen from './app/Screen/SplashScreen'; 
 import CustomHeader from './components/CustomHeader';
 import { LogBox } from 'react-native';
-// ✅ Providers
 import { UserProvider, useUser } from './context/UserContext';
 import { ChatListProvider } from './context/ChatListProvider';
 
-// ✅ Screens
 import RegisterScreen from './app/Screen/login/RegisterScreen';
 import LoginScreen from './app/Screen/login/LoginScreen';
 import HomeScreen from './app/Screen/HomeScreen';
@@ -34,7 +32,6 @@ import MatchHistory from './app/Screen/Match/MatchHistory';
 import ArticleDetailScreen from './app/Screen/Guide/ArticleDetailScreen';
 import NotificationScreen from './app/Screen/NotificationScreen';
 
-// ✅ Utils
 import { registerForPushNotificationsAsync } from './utils/notificationHelper';
 
 const Stack = createStackNavigator();
@@ -43,17 +40,16 @@ const AppNavigator = ({ setSelectedUserId }: { setSelectedUserId: (id: string) =
   const { user } = useUser();
 
   useEffect(() => {
-    // สมัคร Push เฉพาะตอนรันบนอุปกรณ์จริงเท่านั้น (กัน Alert บน Emulator/Simulator)
     if (Platform.OS !== 'web' && Device.isDevice) {
       registerForPushNotificationsAsync().catch((e) =>
         console.warn('Push registration failed:', e)
       );
     } else {
-      // ข้ามบน Emulator/Simulator
+     
       console.log('Skip push registration on simulator/emulator');
     }
 
-    // ตั้งค่า Navigation Bar (Android)
+
     const setupNavigationBar = async () => {
       try {
         await NavigationBar.setVisibilityAsync('hidden');
@@ -68,7 +64,7 @@ const AppNavigator = ({ setSelectedUserId }: { setSelectedUserId: (id: string) =
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Splash" // 👈 เปลี่ยนให้เริ่มที่ Splash
+        initialRouteName="Splash"
         screenOptions={{
           header: ({ options, route }) => {
             const title = (route.params as any)?.customTitle || options.title || route.name;

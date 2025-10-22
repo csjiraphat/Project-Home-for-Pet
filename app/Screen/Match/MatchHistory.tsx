@@ -10,23 +10,20 @@ import { Video, ResizeMode } from 'expo-av';
 import API from '../../../android/app/src/config';
 
 type RootParams = {
-  MatchHistory: { type?: 'fh'|'fp'; sourceId?: number; title?: string };
+  MatchHistory: { type?: 'fh' | 'fp'; sourceId?: number; title?: string };
 };
 
 type Row = {
   id: number;
-  left_type: 'fh'|'fp'; left_id: number; right_type: 'fh'|'fp'; right_id: number;
+  left_type: 'fh' | 'fp'; left_id: number; right_type: 'fh' | 'fp'; right_id: number;
   score: number; created_at: string;
 
-  // left (โพสต์ของเรา)
   left_title?: string; left_user?: string;
   left_type_detail?: string; left_breed?: string; left_sex?: string;
-  left_age?: string; left_image?: string|null; left_post_date?: string;
+  left_age?: string; left_image?: string | null; left_post_date?: string;
 
-  // right (ที่ถูกจับคู่)
   right_title?: string; right_user?: string; right_pet_type?: string; right_breed?: string; right_sex?: string; right_color?: string;
 
-  // คะแนน
   match_percent?: number; percent?: number; percentage?: number; percent_text?: string;
 };
 
@@ -34,13 +31,12 @@ const BASE_URL = (API as any).BASE_URL || '';
 const UPLOAD_PATH: string = ((API as any).UPLOAD_PATH || `${BASE_URL}/`).replace(/([^/])$/, '$1/');
 const GET_MATCH_HISTORY = (API as any).GET_MATCH_HISTORY || `${BASE_URL}/post/get_match_history.php`;
 const ROUTE_POST_DETAIL = (API as any).ROUTE_POST_DETAIL || 'PostDetail';
-const ROUTE_CHAT        = (API as any).ROUTE_CHAT || 'ChatRoomScreen';
+const ROUTE_CHAT = (API as any).ROUTE_CHAT || 'ChatRoomScreen';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-/* ===== [แก้จุดที่ 1] utils ให้เหมือน PostList ===== */
 const parseMediaList = (image?: string[] | string): string[] => {
   if (!image) return [];
   if (Array.isArray(image)) return image;
@@ -50,7 +46,7 @@ const parseMediaList = (image?: string[] | string): string[] => {
     if (typeof j === 'string') return j ? [j] : [];
     return [];
   } catch {
-    // รองรับ CSV ด้วย , หรือ |
+
     return String(image)
       .split(/[,|]/)
       .map(s => s.trim())
@@ -62,38 +58,38 @@ const toFullUri = (raw?: string) => {
   if (!raw) return undefined;
   let p = String(raw).trim().replace(/\\/g, '/');
 
-  // ถ้าเป็น URL เต็มแล้ว
+
   if (/^https?:\/\//i.test(p)) return p;
 
-  // ตัด / นำหน้า และ prefix แปลก ๆ
+
   p = p.replace(/^\/+/, '').replace(/^(\.\/|\.\.\/)+/, '').replace(/^db_fhomepet\//i, '');
 
-  // ให้ขึ้นต้นที่ uploads/ เสมอ
+
   if (!/^uploads\//i.test(p)) p = `uploads/${p}`;
 
-  // ต่อกับ UPLOAD_PATH (พาธปลายทางเดียวกับ PostList)
+
   const base = ((API as any).UPLOAD_PATH || UPLOAD_PATH).replace(/([^/])$/, '$1/');
   return base + p.replace(/^uploads[\\/]+/i, '');
 };
 
 const isVideo = (u?: string) =>
   !!u && /\.(mp4|mov|m4v|webm)$/i.test((u.split('?')[0] || ''));
-/* ===== /utils ===== */
+
 
 const pct = (r: Partial<Row>) =>
   Number(r.percent ?? r.match_percent ?? r.percentage ?? Math.round(Number(r.score ?? 0))) || 0;
-const metaJoin = (list: (string|undefined|false)[]) => list.filter(Boolean).join(' · ');
+const metaJoin = (list: (string | undefined | false)[]) => list.filter(Boolean).join(' · ');
 const timeText = (iso?: string) => iso ? new Date(iso.replace(' ', 'T')).toLocaleString() : '';
 
 type Post = {
-  id?: string|number; postType?: 'fh'|'fp'|string; title?: string; type?: string; breed?: string;
+  id?: string | number; postType?: 'fh' | 'fp' | string; title?: string; type?: string; breed?: string;
   sex?: string; color?: string; age?: string; min_age?: string; max_age?: string;
-  image?: string[]|string; post_date?: string; user?: string;
+  image?: string[] | string; post_date?: string; user?: string;
   _thumbUri?: string; _isVideo?: boolean;
 };
 const buildPostForDetailFromLeft = (g: {
-  left_id:number; left_title?:string; left_type_detail?:string; left_breed?:string;
-  left_age?:string; left_image?:string|null; left_post_type:'fh'|'fp'; left_user?:string; left_post_date?:string;
+  left_id: number; left_title?: string; left_type_detail?: string; left_breed?: string;
+  left_age?: string; left_image?: string | null; left_post_type: 'fh' | 'fp'; left_user?: string; left_post_date?: string;
 }): { post: Post } => {
   const post: Post = {
     id: g.left_id,
@@ -132,15 +128,14 @@ export default function MatchHistory() {
   const { params } = useRoute<RouteProp<RootParams, 'MatchHistory'>>();
 
   const [username, setUsername] = useState<string>('');
-  const [type, setType]         = useState<'fh'|'fp'>(params?.type || 'fp');
+  const [type, setType] = useState<'fh' | 'fp'>(params?.type || 'fp');
   const [sourceId, setSourceId] = useState<number>(params?.sourceId || 0);
-  const [titleParam]            = useState<string|undefined>(params?.title);
-  const [rows, setRows]         = useState<Row[]>([]);
+  const [titleParam] = useState<string | undefined>(params?.title);
+  const [rows, setRows] = useState<Row[]>([]);
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
-  const [loading, setLoading]   = useState(true);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // resolve user + type ถูกต้องจาก AsyncStorage
   useEffect(() => {
     (async () => {
       const u = await AsyncStorage.getItem('username');
@@ -177,25 +172,23 @@ export default function MatchHistory() {
         setRows(Array.isArray(json.data) ? json.data : []);
         if (sourceId) setExpanded({ [sourceId]: true });
 
-        // ชั้นกันตาย: เดาจากผลจริงถ้าจำเป็น
         const data: Row[] = Array.isArray(json.data) ? json.data : [];
         if (data.length > 0) {
-          const count: Record<'fh'|'fp', number> = { fh: 0, fp: 0 } as any;
+          const count: Record<'fh' | 'fp', number> = { fh: 0, fp: 0 } as any;
           for (const r of data) count[r.left_type] = (count[r.left_type] || 0) + 1;
-          const inferred: 'fh'|'fp' = (count.fh >= count.fp ? 'fh' : 'fp');
+          const inferred: 'fh' | 'fp' = (count.fh >= count.fp ? 'fh' : 'fp');
           if (inferred !== type) setType(inferred);
         }
       } else {
         Alert.alert('ผิดพลาด', json?.message || 'โหลดข้อมูลไม่ได้');
       }
-    } catch (e:any) {
+    } catch (e: any) {
       Alert.alert('ผิดพลาด', String(e?.message || e));
     } finally {
       setLoading(false);
     }
   }, [type, sourceId, username]);
 
-  // โหลดเมื่อ username/type พร้อม
   useEffect(() => { if (username) load(); }, [username, type, sourceId, load]);
 
   const onRefresh = useCallback(async () => {
@@ -203,11 +196,10 @@ export default function MatchHistory() {
     try { await load(); } finally { setRefreshing(false); }
   }, [load]);
 
-  // กลุ่มตามโพสต์หลักของเรา (left)
   const groups = useMemo(() => {
     const m = new Map<number, {
-      left_id:number; left_title?:string; left_type_detail?:string; left_breed?:string; left_age?:string;
-      left_image?:string|null; left_user?:string; left_post_date?:string; left_post_type:'fh'|'fp';
+      left_id: number; left_title?: string; left_type_detail?: string; left_breed?: string; left_age?: string;
+      left_image?: string | null; left_user?: string; left_post_date?: string; left_post_type: 'fh' | 'fp';
       data: Row[];
     }>();
     for (const r of rows) {
@@ -234,7 +226,6 @@ export default function MatchHistory() {
     setExpanded(prev => ({ ...prev, [leftId]: !prev[leftId] }));
   };
 
-  // ===== Navigation ไปหน้า PostDetail =====
   const goPostDetailLeft = (g: (typeof groups)[number]) => {
     navigation.navigate(ROUTE_POST_DETAIL, buildPostForDetailFromLeft(g));
   };
@@ -247,7 +238,6 @@ export default function MatchHistory() {
       return;
     }
     try {
-      // ChatRoomScreen ต้องการ `selectedUsername`
       navigation.navigate(ROUTE_CHAT, { selectedUsername: r.right_user });
     }
     catch (e: any) {
@@ -260,7 +250,7 @@ export default function MatchHistory() {
     <View style={styles.matchRow}>
       <Text style={styles.matchTitle} numberOfLines={1}>{r.right_title || `โพสต์ #${r.right_id}`}</Text>
       <Text style={styles.matchPercent}>{pct(r)}%</Text>
-      <View style={{flexDirection:'row', gap:8, marginTop:6}}>
+      <View style={{ flexDirection: 'row', gap: 8, marginTop: 6 }}>
         <TouchableOpacity style={styles.btnOutline} onPress={() => goPostDetailRight(r)}>
           <Text style={styles.btnOutlineText}>รายละเอียด</Text>
         </TouchableOpacity>
@@ -272,12 +262,12 @@ export default function MatchHistory() {
   );
 
   const renderGroup = ({ item: g }: { item: (typeof groups)[number] }) => {
-    /* ===== [แก้จุดที่ 2] ใช้ util ใหม่หา mediaUri ===== */
+
     const arr = g.left_post_type === 'fh' ? parseMediaList(g.left_image || undefined) : [];
     const firstMedia = arr[0];
     const mediaUri = firstMedia ? toFullUri(firstMedia) : undefined;
     const mediaIsVideo = isVideo(mediaUri);
-    /* ===== /media ===== */
+
 
     const isOpen = !!expanded[g.left_id];
     const meta = metaJoin([
@@ -288,7 +278,7 @@ export default function MatchHistory() {
 
     return (
       <View style={styles.card}>
-        <TouchableOpacity activeOpacity={0.9} style={{flexDirection:'row', alignItems:'center'}} onPress={() => goPostDetailLeft(g)}>
+        <TouchableOpacity activeOpacity={0.9} style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => goPostDetailLeft(g)}>
           {mediaUri ? (
             <View style={styles.thumbWrap}>
               {mediaIsVideo ? (
@@ -299,18 +289,18 @@ export default function MatchHistory() {
             </View>
           ) : null}
 
-          <View style={[{ flex:1 }, mediaUri ? { marginLeft: 10 } : null]}>
+          <View style={[{ flex: 1 }, mediaUri ? { marginLeft: 10 } : null]}>
             <Text style={styles.cardTitle} numberOfLines={1}>{g.left_title || `โพสต์ของฉัน #${g.left_id}`}</Text>
             <Text style={styles.cardMeta} numberOfLines={2}>{meta}</Text>
-            <View style={{flexDirection:'row', justifyContent:'space-between', marginTop:4}}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
               <Text style={styles.cardUser}>{g.left_user || '-'}</Text>
               <Text style={styles.cardTime}>{timeText(g.left_post_date || '')}</Text>
             </View>
           </View>
         </TouchableOpacity>
 
-        <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginTop:10}}>
-          <Text style={{color:'#64748B'}}>จับคู่แล้ว {g.data.length} รายการ</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+          <Text style={{ color: '#64748B' }}>จับคู่แล้ว {g.data.length} รายการ</Text>
           <TouchableOpacity style={styles.btnShow} onPress={() => toggleExpand(g.left_id)}>
             <Text style={styles.btnShowText}>{isOpen ? 'ซ่อนรายการ' : 'ดูการจับคู่'}</Text>
           </TouchableOpacity>
@@ -328,7 +318,7 @@ export default function MatchHistory() {
   const typeLabel = type === 'fh' ? 'FH (หาบ้าน)' : 'FP (หาสัตว์เลี้ยง)';
 
   return (
-    <SafeAreaView style={{ flex:1, backgroundColor:'#fff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>{headerTitle}</Text>
         <Text style={styles.headerSub}>
@@ -337,19 +327,19 @@ export default function MatchHistory() {
       </View>
 
       {loading ? (
-        <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator />
-          <Text style={{marginTop:6, color:'#667085'}}>กำลังโหลด…</Text>
+          <Text style={{ marginTop: 6, color: '#667085' }}>กำลังโหลด…</Text>
         </View>
       ) : (
         <FlatList
           data={groups}
           keyExtractor={(g) => String(g.left_id)}
           renderItem={renderGroup}
-          contentContainerStyle={{ padding:16, paddingBottom:28 }}
-          ItemSeparatorComponent={() => <View style={{height:10}} />}
+          contentContainerStyle={{ padding: 16, paddingBottom: 28 }}
+          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          ListEmptyComponent={<View style={{alignItems:'center', marginTop:40}}><Text>ยังไม่มีประวัติ</Text></View>}
+          ListEmptyComponent={<View style={{ alignItems: 'center', marginTop: 40 }}><Text>ยังไม่มีประวัติ</Text></View>}
         />
       )}
     </SafeAreaView>
@@ -357,29 +347,29 @@ export default function MatchHistory() {
 }
 
 const styles = StyleSheet.create({
-  header:{ paddingHorizontal:16, paddingVertical:12, borderBottomWidth:1, borderBottomColor:'#EEF2FF', backgroundColor:'#fff' },
-  headerTitle:{ fontSize:18, fontWeight:'800', color:'#1f2a56' },
-  headerSub:{ marginTop:2, color:'#667085' },
+  header: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#EEF2FF', backgroundColor: '#fff' },
+  headerTitle: { fontSize: 18, fontWeight: '800', color: '#1f2a56' },
+  headerSub: { marginTop: 2, color: '#667085' },
 
-  card:{ backgroundColor:'#F8FAFF', borderRadius:16, padding:12, borderWidth:1, borderColor:'#E5E7FF' },
-  cardTitle:{ fontSize:16, fontWeight:'800', color:'#111827' },
-  cardMeta:{ color:'#344054', marginTop:2 },
-  cardUser:{ color:'#6B7280', fontSize:12 },
-  cardTime:{ color:'#6B7280', fontSize:12 },
+  card: { backgroundColor: '#F8FAFF', borderRadius: 16, padding: 12, borderWidth: 1, borderColor: '#E5E7FF' },
+  cardTitle: { fontSize: 16, fontWeight: '800', color: '#111827' },
+  cardMeta: { color: '#344054', marginTop: 2 },
+  cardUser: { color: '#6B7280', fontSize: 12 },
+  cardTime: { color: '#6B7280', fontSize: 12 },
 
-  thumbWrap:{ width:64, height:64, borderRadius:12, overflow:'hidden', backgroundColor:'#e5e7eb', marginRight:10 },
-  thumb:{ width:'100%', height:'100%', borderRadius:12 },
+  thumbWrap: { width: 64, height: 64, borderRadius: 12, overflow: 'hidden', backgroundColor: '#e5e7eb', marginRight: 10 },
+  thumb: { width: '100%', height: '100%', borderRadius: 12 },
 
-  btnShow:{ backgroundColor:'#E0F2FE', paddingVertical:8, paddingHorizontal:12, borderRadius:12 },
-  btnShowText:{ color:'#0369A1', fontWeight:'700' },
+  btnShow: { backgroundColor: '#E0F2FE', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 12 },
+  btnShowText: { color: '#0369A1', fontWeight: '700' },
 
-  matchesBox:{ marginTop:10, borderTopWidth:1, borderTopColor:'#E5E7FF', paddingTop:10 },
-  matchRow:{ backgroundColor:'#fff', borderWidth:1, borderColor:'#E5E7FF', borderRadius:12, padding:10, marginTop:8 },
-  matchTitle:{ fontWeight:'700', color:'#111827', flex:1 },
-  matchPercent:{ fontWeight:'800', color:'#0ea5e9', position:'absolute', right:10, top:10 },
+  matchesBox: { marginTop: 10, borderTopWidth: 1, borderTopColor: '#E5E7FF', paddingTop: 10 },
+  matchRow: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5E7FF', borderRadius: 12, padding: 10, marginTop: 8 },
+  matchTitle: { fontWeight: '700', color: '#111827', flex: 1 },
+  matchPercent: { fontWeight: '800', color: '#0ea5e9', position: 'absolute', right: 10, top: 10 },
 
-  btnOutline:{ borderWidth:1, borderColor:'#CBD5FF', paddingVertical:6, paddingHorizontal:10, borderRadius:10 },
-  btnOutlineText:{ color:'#1f2a56', fontWeight:'700' },
-  btnSolid:{ backgroundColor:'#10b981', paddingVertical:6, paddingHorizontal:10, borderRadius:10 },
-  btnSolidText:{ color:'#fff', fontWeight:'800' },
+  btnOutline: { borderWidth: 1, borderColor: '#CBD5FF', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 10 },
+  btnOutlineText: { color: '#1f2a56', fontWeight: '700' },
+  btnSolid: { backgroundColor: '#10b981', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 10 },
+  btnSolidText: { color: '#fff', fontWeight: '800' },
 });

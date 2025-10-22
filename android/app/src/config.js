@@ -28,7 +28,7 @@ const API = {
   // ค้นหาโพสต์ (ถ้ามี)
   SEARCH_POST: `${BASE_URL}/post/search_posts.php`,
 
-  // อัปเดต/ลบ (ถ้าคุณใช้ไฟล์เดียวกันกับ POST_* ข้างบน ก็ชี้ไฟล์เดิมได้)
+  // อัปเดต/ลบ 
   POST_UPDATE_HOME: `${BASE_URL}/post/findHome.php`,
   POST_UPDATE_PET: `${BASE_URL}/post/findPet.php`,
   POST_DELETE_HOME: `${BASE_URL}/post/findHome.php`,
@@ -38,8 +38,6 @@ const API = {
   MASTER_READ: `${BASE_URL}/post/master_read_api.php`,
 
   // ---------- Matching (ใหม่) ----------
-  // ใช้แบบ:  GET  `${API.MATCH_POSTS}?mode=from_fh&id=FH_ID`
-  //          GET  `${API.MATCH_POSTS}?mode=from_fp&id=FP_ID`
   MATCH_POSTS: `${BASE_URL}/post/match_posts.php`,
   GET_MATCH_HISTORY: `${BASE_URL}/post/get_match_history.php`,
 
@@ -54,8 +52,8 @@ const API = {
   REPORT_REASONS: `${BASE_URL}/report/report_reasons.php`,
 
     // ============= Notifications (NEW) =============
-  GET_NOTIFICATIONS: `${BASE_URL}/report/api_get_notifications.php`, // 👈 NEW
-  MARK_NOTIFICATION_READ: `${BASE_URL}/report/api_mark_notification_as_read.php`, // 👈 NEW
+  GET_NOTIFICATIONS: `${BASE_URL}/report/api_get_notifications.php`, 
+  MARK_NOTIFICATION_READ: `${BASE_URL}/report/api_mark_notification_as_read.php`, 
   GET_UNREAD_COUNT: `${BASE_URL}/report/api_get_unread_count.php`,
 
   // ============= Articles (ใหม่) =============

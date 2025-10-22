@@ -6,7 +6,7 @@ interface UserData {
   username: string;
   email: string;
   userType: string;
-  profilePicture?: string | null; // ✅ เพิ่มฟิลด์รองรับรูปโปรไฟล์
+  profilePicture?: string | null;
 }
 
 interface UserContextType {
